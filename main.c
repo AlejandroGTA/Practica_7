@@ -3,7 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <DHT11.h>
-
+#include <MQ8.h>
+#include <math.h>
 
 #fuses HS, NOFCMEN, NOIESO, PUT, NOBROWNOUT, NOWDT
 #fuses NOPBADEN, NOMCLR, STVREN, NOLVP, NODEBUG
@@ -25,6 +26,7 @@
 //timer0 con el despliegue de la memoria de video(displays)
 
 int16 valor_leer = 0, sensor1 = 0, sensor2 = 0;
+float concentration;
 int  flag_canal1 = 0, flag_canal2 = 0, adc_read_done = 0 ;
 int cambio = 1;
 int selector_conf = 1;
@@ -39,6 +41,7 @@ int alarma_rh = 12, alarma_rh_save = 12, alarma_s1 = 50, alarma_s1_save = 50, al
 int flag_conf_lcd = 0, flag_conf_alarma = 0, selector_alarma = 1;
 int flag_conf_alarma_tem = 0, flag_conf_alarma_rh = 0, flag_conf_alarma_s1 = 0, flag_conf_alarma_s2 = 0;
 int16 flag_enviar_serial = 100, flag_mostrar_lcd = 100;
+
 #INT_TIMER0
 void sti_TIMER0(){
    flag_enviar_serial+=100;
@@ -96,6 +99,7 @@ void main(void) {
          adc_read_done = 0;
          set_adc_channel(1);
          read_adc(ADC_START_ONLY);
+         concentration = getConcentration_8(sensor1,R0);
       }
       if(flag_canal2 == 1 && adc_done() == 1){
          sensor2 = valor_leer;
@@ -393,6 +397,7 @@ void main(void) {
    } 
 
    if(flag_mostrar_lcd == velocidad_lcd_save){
+      printf(lcd_putc,"\f");
       if(flag_conf){
          switch(selector_conf){
             case 1:
@@ -422,19 +427,19 @@ void main(void) {
          switch(cambio){
             case 1:
                lcd_gotoxy(1,1);
-               printf(lcd_putc,"%d%d.%d%d C",dato[1],dato[2],dato[3],dato[4]);
+               printf(lcd_putc,"\f%d%d.%d%d C",dato[1],dato[2],dato[3],dato[4]);
                lcd_gotoxy(1,2);
                printf(lcd_putc,"%d%d.%d%d %c",dato[5],dato[6],dato[7],dato[8],37);
             break;
             case 2:
                lcd_gotoxy(1,1);
-               printf(lcd_putc,"%d%d.%d%d %c",dato[5],dato[6],dato[7],dato[8],37);
+               printf(lcd_putc,"\f%d%d.%d%d %c",dato[5],dato[6],dato[7],dato[8],37);
                lcd_gotoxy(1,2);
-               printf(lcd_putc,"%li",sensor1);
+               printf(lcd_putc,"%0.9f",(float)concentration);
             break;
             case 3:
                lcd_gotoxy(1,1);
-               printf(lcd_putc,"%li",sensor1);
+               printf(lcd_putc,"\f%li",concentration);
                lcd_gotoxy(1,2);
                printf(lcd_putc,"%li",sensor2);
             break;
@@ -483,14 +488,25 @@ void main(void) {
       flag_mostrar_lcd = 0;
    }
    if(velocidad_serial_save == flag_enviar_serial){
-      /*printf("\n\n%d%d.%d%d %c",dato[5],dato[6],dato[7],dato[8],37);
-      printf("\n%d%d.%d%d C",dato[1],dato[2],dato[3],dato[4]);
+      printf("\n1");
+      printf("\n%d%d.%d%d",dato[5],dato[6],dato[7],dato[8]);
+      printf("\n0");
+      printf("\n%d%d.%d%d",dato[1],dato[2],dato[3],dato[4]);
+      printf("\n2");
       printf("\n%li",sensor1);
-      printf("\n%li",sensor2);*/
-      printf("\r\r%d%d.%d%d %c",dato[5],dato[6],dato[7],dato[8],37);
-      printf("\r%d%d.%d%d C",dato[1],dato[2],dato[3],dato[4]);
-      printf("\r%li",sensor1);
-      printf("\r%li",sensor2);
+      printf("\n3");
+      printf("\n%li",sensor2);
+      
+
+      /*printf("\n0");
+      printf("\n%d%d.%d%d %c",dato[5],dato[6],dato[7],dato[8],37);
+      printf("\n1");
+      printf("\n%d%d.%d%d C",dato[1],dato[2],dato[3],dato[4]);
+      printf("\n2");
+      printf("\n%li",sensor1);
+      printf("\n3");
+      printf("\n%li",sensor2);
+      */
       flag_enviar_serial = 0;
    }
 }
