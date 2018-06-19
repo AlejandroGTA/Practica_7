@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <DHT11.h>
 #include <MQ8.h>
+#include <MQ6.h>
 #include <math.h>
 
 #fuses HS, NOFCMEN, NOIESO, PUT, NOBROWNOUT, NOWDT
@@ -33,11 +34,11 @@ int selector_conf = 1;
 int flag = 1, flag_conf = 0;
 int flag_interrupcion = 0, flag_interrupcion_push = 0;
 int dato [9]={0};
-int flag_conf_timer0 = 0, flag_conf_serial = 0, flag_enviar_tem = 0, flag_enviar_rh = 0, flag_enviar_sen1_2 = 0;
-int16 ms = 100, envio_cont=0, borrame=0, velocidad_serial_save = 100, velocidad_serial = 100;
-int16  velocidad_lcd = 200, velocidad_lcd_save = 100; 
+int  flag_conf_serial = 0;
+int16 velocidad_serial_save = 200, velocidad_serial = 200;
+int16 velocidad_lcd = 200, velocidad_lcd_save = 100; 
 int alarma_tem = 30, alarma_tem_save = 30;
-int alarma_rh = 12, alarma_rh_save = 12, alarma_s1 = 50, alarma_s1_save = 50, alarma_s2 = 60, alarma_s2_save = 60;
+int alarma_rh = 10, alarma_rh_save = 10, alarma_s1 = 100, alarma_s1_save = 100, alarma_s2 = 100, alarma_s2_save = 100;
 int flag_conf_lcd = 0, flag_conf_alarma = 0, selector_alarma = 1;
 int flag_conf_alarma_tem = 0, flag_conf_alarma_rh = 0, flag_conf_alarma_s1 = 0, flag_conf_alarma_s2 = 0;
 int16 flag_enviar_serial = 100, flag_mostrar_lcd = 100;
@@ -99,7 +100,7 @@ void main(void) {
          adc_read_done = 0;
          set_adc_channel(1);
          read_adc(ADC_START_ONLY);
-         concentration = getConcentration_8(sensor1,R0);
+         //concentration = getConcentration_8(sensor1,R0);
       }
       if(flag_canal2 == 1 && adc_done() == 1){
          sensor2 = valor_leer;
@@ -108,6 +109,7 @@ void main(void) {
          adc_read_done = 0;
          set_adc_channel(0);
          read_adc(ADC_START_ONLY);
+         //concentration = getConcentration_6(sensor1,R0);
       }
       
       if(flag_interrupcion){
@@ -153,26 +155,26 @@ void main(void) {
          }
          if(flag_conf_alarma_tem){
             alarma_tem-=1;
-            if(alarma_tem<1){
-               alarma_tem = 1;
+            if(alarma_tem<10){
+               alarma_tem = 10;
             }
          }
          if(flag_conf_alarma_rh){
             alarma_rh-=1;
-            if(alarma_rh<1){
-               alarma_rh = 1;
+            if(alarma_rh<10){
+               alarma_rh = 10;
             }
          }
          if(flag_conf_alarma_s1){
             alarma_s1-=1;
-            if(alarma_s1<1){
-               alarma_s1 = 1;
+            if(alarma_s1<100){
+               alarma_s1 = 100;
             }
          }
          if(flag_conf_alarma_s2){
             alarma_s2-=1;
-            if(alarma_s2<1){
-               alarma_s2 = 1;
+            if(alarma_s2<100){
+               alarma_s2 = 100;
             }
          }
          printf(lcd_putc,"\f");
@@ -219,8 +221,8 @@ void main(void) {
 
          if(flag_conf_alarma_tem){
             alarma_tem+=1;
-            if(alarma_tem>90){
-               alarma_tem = 90;
+            if(alarma_tem>50){
+               alarma_tem = 50;
             }
          }
          if(flag_conf_alarma_rh){
@@ -230,15 +232,15 @@ void main(void) {
             }
          }
          if(flag_conf_alarma_s1){
-            alarma_s1+=1;
-            if(alarma_s1>90){
-               alarma_s1 = 90;
+            alarma_s1+=100;
+            if(alarma_s1>10000){
+               alarma_s1 = 10000;
             }
          }
          if(flag_conf_alarma_s2){
-            alarma_s2+=1;
-            if(alarma_s2>90){
-               alarma_s2 = 90;
+            alarma_s2+=100;
+            if(alarma_s2>10000){
+               alarma_s2 = 10000;
             }
          }
          printf(lcd_putc,"\f");
@@ -435,11 +437,11 @@ void main(void) {
                lcd_gotoxy(1,1);
                printf(lcd_putc,"\f%d%d.%d%d %c",dato[5],dato[6],dato[7],dato[8],37);
                lcd_gotoxy(1,2);
-               printf(lcd_putc,"%0.9f",(float)concentration);
+               printf(lcd_putc,"%li",sensor1);
             break;
             case 3:
                lcd_gotoxy(1,1);
-               printf(lcd_putc,"\f%li",concentration);
+               printf(lcd_putc,"\f%li",sensor1);
                lcd_gotoxy(1,2);
                printf(lcd_putc,"%li",sensor2);
             break;
